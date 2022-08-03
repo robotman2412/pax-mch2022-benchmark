@@ -14,7 +14,7 @@ static pax_buf_t buf;
 xQueueHandle buttonQueue;
 
 #include <esp_log.h>
-static const char *TAG = "mch2022-demo-app";
+static const char *TAG = "pax-esp32-benchmark";
 
 // Updates the screen with the latest buffer.
 void disp_flush() {
@@ -43,6 +43,13 @@ void app_main() {
     
     // Initialize graphics for the screen.
     pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
+    if (pax_last_error) exit_to_launcher();
+    pax_enable_multicore(1);
+    
+    // Initialise graphics for the benchmark.
+    benchmark_buf = malloc(sizeof(pax_buf_t));
+    pax_buf_init(benchmark_buf, NULL, 320, 240, PAX_BUF_16_565RGB);
+    if (pax_last_error) exit_to_launcher();
     
     // Initialize NVS.
     nvs_flash_init();
@@ -60,7 +67,7 @@ void app_main() {
         pax_background(&buf, col);
         
         // This text is shown on screen.
-        char             *text = "Hello, MCH2022!";
+        char             *text = "BENCH, THE.";
         
         // Pick the font (Saira is the only one that looks nice in this size).
         const pax_font_t *font = pax_font_saira_condensed;

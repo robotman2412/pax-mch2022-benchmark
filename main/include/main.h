@@ -36,3 +36,6 @@ void disp_flush();
 
 // Exits the app, returning to the launcher.
 void exit_to_launcher();
+
+// Runs a benchmark with some nice visual flair added.
+void fancy_benchmark(const char *name, benchfunc_t func, void *args);

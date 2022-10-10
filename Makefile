@@ -15,6 +15,9 @@ prepare:
 clean:
 	rm -rf "$(BUILDDIR)"
 
+paxclean:
+	rm -rf "$(BUILDDIR)/esp-idf/pax-graphics/"
+
 build:
 	source "$(IDF_PATH)/export.sh" && idf.py build
 

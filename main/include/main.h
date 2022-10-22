@@ -22,6 +22,7 @@
 #include "esp_system.h"
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "rp2040.h"
 // For WiFi connectivity.
 #include "wifi_connect.h"
 #include "wifi_connection.h"
@@ -30,6 +31,14 @@
 #include "soc/rtc_cntl_reg.h"
 // Benchmarking system.
 #include "benchsys.h"
+// Testing stuff.
+#include "testing.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern pax_buf_t buf;
 
 // Updates the screen with the last drawing.
 void disp_flush();
@@ -37,5 +46,12 @@ void disp_flush();
 // Exits the app, returning to the launcher.
 void exit_to_launcher();
 
+// Performs all benchmarks.
+void perform_benchmark();
+
 // Runs a benchmark with some nice visual flair added.
 void fancy_benchmark(const char *name, benchfunc_t func, void *args);
+
+#ifdef __cplusplus
+}
+#endif

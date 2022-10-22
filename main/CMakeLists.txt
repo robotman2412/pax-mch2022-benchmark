@@ -7,6 +7,8 @@ idf_component_register(
     SRCS
         "main.c"
         "benchsys.c"
+        "testing.cpp"
+       
     INCLUDE_DIRS
         "." "include"
     EMBED_FILES

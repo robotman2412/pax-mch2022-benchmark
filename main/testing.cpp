@@ -41,18 +41,21 @@ extern "C" void testing() {
 	// pax_join();
 	// disp_flush();
 	
+	pax_apply_2d(&buf, matrix_2d_scale(4, 4));
 	pax_vec1_t shape[] = {
+		{ 15, 35 },
+		{ 35, 45 },
+		{ 40, 40 },
+		
 		{ 20, 20 },
 		{ 30, 25 },
 		{ 40, 15 },
-		{ 40, 40 },
-		{ 35, 45 },
-		{ 15, 35 },
 	};
 	size_t n_shape = sizeof(shape) / sizeof(pax_vec1_t);
 	
 	pax_draw_shape(&buf, 0xffff0000, n_shape, shape);
 	pax_outline_shape(&buf, 0xffffffff, n_shape, shape);
+	pax_draw_line(&buf, 0xffffffff, shape[0].x, shape[0].y, shape[n_shape-1].x, shape[n_shape-1].y);
 	
 	disp_flush();
 	

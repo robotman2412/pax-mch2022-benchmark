@@ -43,3 +43,6 @@
 [submodule "tools"]
 	path = tools
 	url = https://github.com/badgeteam/mch2022-tools
+[submodule "main/mch2022-demo"]
+	path = main/mch2022-demo
+	url = https://github.com/badgeteam/mch2022-demo

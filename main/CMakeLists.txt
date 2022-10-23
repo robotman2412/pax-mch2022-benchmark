@@ -8,9 +8,12 @@ idf_component_register(
         "main.c"
         "benchsys.c"
         "testing.cpp"
+        "mch2022-demo/techdemo.c"
+        "mch2022-demo/sponsors.c"
+        "mch2022-demo/images/anim_intro.c"
        
     INCLUDE_DIRS
-        "." "include"
+        "." "include" "mch2022-demo"
     EMBED_FILES
         ${project_dir}/main/my_image.png
 )

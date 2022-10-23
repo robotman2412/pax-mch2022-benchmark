@@ -49,6 +49,9 @@ void exit_to_launcher();
 // Performs all benchmarks.
 void perform_benchmark();
 
+// Run the TechDemo in a loop.
+void td_ok();
+
 // Runs a benchmark with some nice visual flair added.
 void fancy_benchmark(const char *name, benchfunc_t func, void *args);
 

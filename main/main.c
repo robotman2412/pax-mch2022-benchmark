@@ -9,6 +9,7 @@
 // native Badge apps on.
 
 #include "main.h"
+#include "techdemo.h"
 
 pax_buf_t buf;
 xQueueHandle buttonQueue;
@@ -24,6 +25,9 @@ static const char *TAG = "pax-esp32-benchmark";
 #define pax_font_sky pax_get_font("sky")
 #endif
 
+#define COLOR_DATASET_SIZE 8192
+static pax_col_t *color_dataset;
+
 // Updates the screen with the latest buffer.
 void disp_flush() {
     ili9341_write(get_ili9341(), buf.buf);
@@ -34,6 +38,30 @@ void exit_to_launcher() {
     REG_WRITE(RTC_CNTL_STORE0_REG, 0);
     esp_restart();
 }
+
+// HSV calculation: 8192 parameters
+static bool benchmark_hsv(pax_buf_t *buf, int iteration, void *args) {
+    union {
+        pax_col_t packed;
+        uint8_t   unpacked[4];
+    } thing;
+    thing.packed = color_dataset[iteration];
+    pax_col_ahsv(thing.unpacked[0], thing.unpacked[1], thing.unpacked[2], thing.unpacked[3]);
+    return true;
+}
+
+// Color overlay: 2x2048 parameters
+static bool benchmark_merge(pax_buf_t *buf, int iteration, void *args) {
+    pax_col_merge(color_dataset[iteration*2], color_dataset[iteration*2 + 1]);
+    return true;
+}
+
+// Color tint: 2x2048 parameters
+static bool benchmark_tint(pax_buf_t *buf, int iteration, void *args) {
+    pax_col_tint(color_dataset[iteration*2], color_dataset[iteration*2 + 1]);
+    return true;
+}
+
 
 // Circle area: 25446
 static bool benchmark_circle_big(pax_buf_t *buf, int iteration, void *args) {
@@ -99,25 +127,66 @@ void app_main() {
     pax_enable_multicore(1);
     pax_background(&buf, 0);
     
-    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX C++ Test");
+    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX C++ Test\n↑ Show Tech Demo");
     disp_flush();
     
     bool cont = true;
+    rp2040_input_message_t msg;
     while (cont) {
-        rp2040_input_message_t msg;
         xQueueReceive(buttonQueue, &msg, portMAX_DELAY);
         
         cont = false;
         if (msg.input == RP2040_INPUT_BUTTON_ACCEPT) perform_benchmark();
         else if (msg.input == RP2040_INPUT_BUTTON_BACK) testing();
         else if (msg.input == RP2040_INPUT_BUTTON_HOME) exit_to_launcher();
+        else if (msg.input == RP2040_INPUT_JOYSTICK_UP) td_ok();
         else cont = true;
     }
     
+    do {
+        xQueueReceive(buttonQueue, &msg, portMAX_DELAY);
+    } while(msg.input != RP2040_INPUT_BUTTON_HOME);
     exit_to_launcher();
 }
 
+void td_ok() {
+    benchmark_buf = malloc(sizeof(pax_buf_t));
+    pax_buf_init(benchmark_buf, NULL, 320, 240, PAX_TD_BUF_TYPE);
+    pax_techdemo_init(&buf, benchmark_buf);
+    uint64_t start = esp_timer_get_time() / 1000;
+    // uint64_t last_time = start;
+    // char text_buf[32];
+    while (1) {
+        uint64_t now = esp_timer_get_time() / 1000 - start;
+        bool fin = pax_techdemo_draw(now);
+        // uint64_t post = esp_timer_get_time() / 1000 - start;
+        // int fps_full = 1000 / (now - last_time);
+        // int fps_render = 1000 / (post - now);
+        // snprintf(text_buf, 31, "%d/%d FPS", fps_full, fps_render);
+        // pax_vec1_t text_size = pax_text_size(PAX_FONT_DEFAULT, 9, text_buf);
+        // pax_draw_text(&buf, -1, PAX_FONT_DEFAULT, 9, buf.width - text_size.x - 1, 0, text_buf);
+        
+        disp_flush();
+        taskYIELD();
+        if (fin) {
+            pax_techdemo_init(&buf, benchmark_buf);
+            start = esp_timer_get_time() / 1000;
+        }
+        
+        // last_time = now;
+        
+        // Limit of loop.
+        bool exuent = false;
+        rp2040_input_message_t msg;
+        if (xQueueReceive(buttonQueue, &msg, 0) && msg.state && msg.input == RP2040_INPUT_BUTTON_HOME) {
+            exuent = true;
+        }
+        if (exuent) break;
+    }
+}
+
 void perform_benchmark() {
+    pax_background(&buf, 0);
     
     // Initialise graphics for the benchmark.
     benchmark_buf = malloc(sizeof(pax_buf_t));
@@ -126,6 +195,30 @@ void perform_benchmark() {
     
     // Calibrate benchmark.
     bench_calibrate();
+    
+    // Prepare color conv dataset.
+    color_dataset = malloc(COLOR_DATASET_SIZE * sizeof(pax_col_t));
+    esp_fill_random(color_dataset, COLOR_DATASET_SIZE * sizeof(pax_col_t));
+    
+    // Colors with alpha.
+    fancy_benchmark("Col AHSV",    benchmark_hsv,   NULL);
+    fancy_benchmark("Col merge M", benchmark_merge, NULL);
+    fancy_benchmark("Col tint  M", benchmark_tint,  NULL);
+    
+    // Trucate alphas in color data.
+    for (size_t i = 0; i < COLOR_DATASET_SIZE; i++) {
+        if (color_dataset[i] & 0x01000000) {
+            color_dataset[i] |= 0xff000000;
+        } else {
+            color_dataset[i] &= 0x00ffffff;
+        }
+    }
+    
+    // Colors without alpha.
+    fancy_benchmark("Col merge T", benchmark_merge, NULL);
+    fancy_benchmark("Col tint  T", benchmark_tint,  NULL);
+    
+    free(color_dataset);
     
     // Circles.
     fancy_benchmark("Circle TU (area 25.446)", benchmark_circle_big,   (void *) 0x3f00afcf);
@@ -162,7 +255,7 @@ void fancy_benchmark(const char *name, benchfunc_t func, void *args) {
     // Show results.
     pax_col_t col = result.success ? 0xff00af00: 0xffff0000;
     char temp[64];
-    snprintf(temp, sizeof(temp), "%s %4.0lf/s, %5.1lfms", result.success ? "OK:  " : "ERR: ", result.per_second, result.average_time / 1000.0);
+    snprintf(temp, sizeof(temp), "%s%6.0lf/s, %5.1lfms", result.success ? "OK: " : "ERR:", result.per_second, result.average_time / 1000.0);
     pax_draw_rect(&buf, 0xff000000, bench_res_x, bench_res_y, buf.width, 9);
     pax_draw_text(&buf, col, pax_font_sky_mono, 9, bench_res_x, bench_res_y, temp);
     disp_flush();

@@ -7,12 +7,18 @@
 
 #pragma once
 
-// For pin mappings.
-#include "hardware.h"
+
 // For graphics.
 #include "pax_gfx.h"
 // For PNG images.
 #include "pax_codecs.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// For pin mappings.
+#include "hardware.h"
 // The screen driver.
 #include "ili9341.h"
 // For all system settings and alike.
@@ -31,6 +37,11 @@
 #include "soc/rtc_cntl_reg.h"
 // Benchmarking system.
 #include "benchsys.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 // Testing stuff.
 #include "testing.h"
 
@@ -51,6 +62,9 @@ void perform_benchmark();
 
 // Run the TechDemo in a loop.
 void td_ok();
+
+// Run the TechDemo version 2 in a loop.
+void td_new();
 
 // Runs a benchmark with some nice visual flair added.
 void fancy_benchmark(const char *name, benchfunc_t func, void *args);

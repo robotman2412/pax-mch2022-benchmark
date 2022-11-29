@@ -46,3 +46,6 @@
 [submodule "main/mch2022-demo"]
 	path = main/mch2022-demo
 	url = https://github.com/badgeteam/mch2022-demo
+[submodule "main/demo2"]
+	path = main/demo2
+	url = https://github.com/robotman2412/pax-new-demo

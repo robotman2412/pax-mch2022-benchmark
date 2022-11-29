@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "techdemo.h"
+#include "td2.h"
 
 pax_buf_t buf;
 xQueueHandle buttonQueue;
@@ -127,7 +128,7 @@ void app_main() {
     pax_enable_multicore(1);
     pax_background(&buf, 0);
     
-    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX C++ Test\n↑ Show Tech Demo");
+    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX C++ Test\n↑ Show Tech Demo\n↓ Show New Demo");
     disp_flush();
     
     bool cont = true;
@@ -140,6 +141,7 @@ void app_main() {
         else if (msg.input == RP2040_INPUT_BUTTON_BACK) testing();
         else if (msg.input == RP2040_INPUT_BUTTON_HOME) exit_to_launcher();
         else if (msg.input == RP2040_INPUT_JOYSTICK_UP) td_ok();
+        else if (msg.input == RP2040_INPUT_JOYSTICK_DOWN) td_new();
         else cont = true;
     }
     
@@ -183,6 +185,10 @@ void td_ok() {
         }
         if (exuent) break;
     }
+}
+
+void td_new() {
+    while (td2_main(&buf));
 }
 
 void perform_benchmark() {
@@ -263,3 +269,29 @@ void fancy_benchmark(const char *name, benchfunc_t func, void *args) {
     bench_res_y += 11;
 }
 
+// Method that TD2 expects to be externally defined, to get time in milliseconds.
+uint64_t td2_millis_cb() {
+    return esp_timer_get_time() / 1000;
+}
+
+// Method that TD2 expects to be externally defined, to allow cancellation.
+bool td2_continue_cb() {
+    rp2040_input_message_t msg;
+    if (xQueueReceive(buttonQueue, &msg, 0)) {
+        return !(msg.input == RP2040_INPUT_BUTTON_HOME && msg.state);
+    } else {
+        return true;
+    }
+}
+
+// Method that TD2 expects to be externally defined, to flush framebuffer.
+bool td2_flush_cb() {
+    disp_flush();
+    return true;
+}
+
+// Method that TD2 expects to be externally defined, to flush framebuffer (dirty part only).
+bool td2_sync_cb() {
+    disp_flush();
+    return true;
+}

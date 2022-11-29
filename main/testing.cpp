@@ -1,72 +1,98 @@
 
 #include "testing.h"
+
 #include <pax_cxx.hpp>
-
-pax_col_t cShader(pax_col_t tint, int x, int y, float u, float v, void *args) {
-	return pax_col_rgb(u * 255, v * 255, 0);
-}
-
-void quantum(pax::Buffer &cbuf, int limit) {
-	if (limit == 0) return;
-	cbuf.pushMatrix();
-	
-	float a = (esp_timer_get_time() % 5000000) / 1000000.0 / 5.0;
-	cbuf.rotate(M_PI * 2.0 * a);
-	cbuf.drawLine(pax::hsv(limit * 10 + a * 255, 255, 255), 50, 0, 0, 0);
-	cbuf.translate(50, 0);
-	cbuf.scale(0.8);
-	quantum(cbuf, limit - 1);
-	
-	cbuf.popMatrix();
-}
 
 extern "C" void testing() {
 	pax::Buffer cbuf(&buf);
 	
-	cbuf.background(pax::rgb(0, 0, 0));
-	cbuf.fillColor = 0xffff007f;
-	cbuf.lineColor = 0xffffffff;
+	pax::Outline outline;
+	outline.push_back((pax_vec1_t) { 1, -1});
+	outline.push_back((pax_vec1_t) { 0, -1});
+	outline.push_back((pax_vec1_t) {-1, -1});
+	outline.push_back((pax_vec1_t) {-1,  0});
+	outline.push_back((pax_vec1_t) {-1,  1});
+	outline.push_back((pax_vec1_t) { 0,  1});
+	outline.push_back((pax_vec1_t) { 1,  1});
+	outline.push_back((pax_vec1_t) { 1,  0});
 	
-	// pax::Shader shader(&cShader, NULL);
-	// pax_quad_t uvs = {
-	// 	0, 0,
-	// 	1, 0,
-	// 	1, 1,
-	// 	0, 1,
-	// };
-	// cbuf.drawCircle(&shader, &uvs, 60, 60, 50);
+	pax::Circle    from;
+	pax::Shape     to(outline);
+	pax::LerpShape device(from, to, 0.5);
 	
-	// cbuf.drawCircle(&shader, NULL, 170, 60, 50);
+	cbuf.fillColor = 0x7fffffff;
 	
-	// pax_join();
-	// disp_flush();
-	
-	pax_apply_2d(&buf, matrix_2d_scale(4, 4));
-	pax_vec1_t shape[] = {
-		{ 15, 35 },
-		{ 35, 45 },
-		{ 40, 40 },
+	uint64_t start = esp_timer_get_time();
+	cbuf.clearMatrix();
+	while (1) {
+		pax_background(&buf, 0);
 		
-		{ 20, 20 },
-		{ 30, 25 },
-		{ 40, 15 },
-	};
-	size_t n_shape = sizeof(shape) / sizeof(pax_vec1_t);
-	
-	pax_draw_shape(&buf, 0xffff0000, n_shape, shape);
-	pax_outline_shape(&buf, 0xffffffff, n_shape, shape);
-	pax_draw_line(&buf, 0xffffffff, shape[0].x, shape[0].y, shape[n_shape-1].x, shape[n_shape-1].y);
-	
-	disp_flush();
-	
-	// while (1) {
-	// 	cbuf.background(pax::rgb(0, 0, 0));
+		float coeff = (esp_timer_get_time() - start) / 1000000.0 / 2;
+		coeff = fmodf(coeff, 4);
+		if (coeff >= 2 && coeff <= 3) {
+			coeff = 1 - (coeff - 2);
+		} else if (coeff > 3) {
+			coeff = 0;
+		} else if (coeff > 1 && coeff < 2) {
+			coeff = 1;
+		}
+		device = device.withCoeff(coeff);
 		
-	// 	cbuf.pushMatrix();
-	// 	cbuf.translate(buf.width / 2, buf.height / 2);
-	// 	quantum(cbuf, 9);
-	// 	cbuf.popMatrix();
+		cbuf.pushMatrix();
+			cbuf.translate(cbuf.width() / 2.0, cbuf.height() / 2.0);
+			cbuf.scale(25);
+			
+			cbuf.draw(-3, 0, from);
+			cbuf.draw( 0, 0, device);
+			cbuf.draw( 3, 0, to);
+		cbuf.popMatrix();
 		
-	// 	disp_flush();
-	// }
+		disp_flush();
+	}
 }
+
+
+
+/*
+	pax_quad_t beziers[] = {
+		{ 160,  64,   176,  32,   192,  16,   224,  16 },
+		{ 224,  16,   256,  16,   272,  48,   272,  64 },
+		{ 272,  64,   272,  96,   192, 208,   160, 224 },
+		{ 160, 224,   128, 208,    48, 112,    48,  64 },
+		{  48,  64,    48,  48,    64,  16,    96,  16 },
+		{  96,  16,   128,  16,   144,  32,   160,  64 },
+	};
+	size_t n_bezier      = sizeof(beziers) / sizeof(pax_quad_t);
+	size_t point_per_bez = 7;
+	size_t n_point       = point_per_bez * n_bezier + 1;
+	pax_vec1_t points[n_point];
+	
+	// Vectorise beziers.
+	for (size_t i = 0; i < n_bezier; i++) {
+		pax_vectorise_bezier(points + (i * point_per_bez), point_per_bez + 1, beziers[i]);
+	}
+	
+	// Triangulate points.
+	size_t *triang   = NULL;
+	size_t  n_triang = pax_triang_concave(&triang, n_point - 1, points);
+	
+	uint64_t start = esp_timer_get_time();
+	while (1) {
+		pax_background(&buf, 0);
+		
+		float coeff = (esp_timer_get_time() - start) / 1000000.0 * 2;
+		
+		if (coeff >= 2) {
+			if (triang) pax_draw_shape_triang(&buf, 0xffffffff, n_point-1, points, n_triang, triang);
+		} else if (coeff > 1) {
+			coeff --;
+			pax_col_t col = 0xff000000 | (0x010101 * (uint8_t) (coeff * 255));
+			if (triang) pax_draw_shape_triang(&buf, col, n_point-1, points, n_triang, triang);
+			pax_outline_shape(&buf, 0xffffffff, n_point, points);
+		} else {
+			pax_outline_shape_part(&buf, 0xffffffff, n_point, points, 0, coeff);
+		}
+		
+		disp_flush();
+	}
+*/

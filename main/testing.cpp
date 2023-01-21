@@ -6,6 +6,14 @@
 extern "C" void testing() {
 	pax::Buffer cbuf(&buf);
 	
+	cbuf.background(0);
+	cbuf.fillColor = 0xffffffff;
+	cbuf.drawStringCentered(pax_font_saira_regular, 18, 320/2, 0, "This is a\nMultiline STRING!!!!!\rwith all\r\nline ending types.");
+	
+	disp_flush();
+}
+
+/*
 	pax::Outline outline;
 	outline.push_back((pax_vec1_t) { 1, -1});
 	outline.push_back((pax_vec1_t) { 0, -1});
@@ -51,9 +59,7 @@ extern "C" void testing() {
 		
 		disp_flush();
 	}
-}
-
-
+*/
 
 /*
 	pax_quad_t beziers[] = {

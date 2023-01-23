@@ -8,7 +8,36 @@ extern "C" void testing() {
 	
 	cbuf.background(0);
 	cbuf.fillColor = 0xffffffff;
-	cbuf.drawStringCentered(pax_font_saira_regular, 18, 320/2, 0, "This is a\nMultiline STRING!!!!!\rwith all\r\nline ending types.");
+	cbuf.lineColor = 0xffffffff;
+	// cbuf.drawStringCentered(pax_font_saira_regular, 18, 320/2, 0, "This is a\nMultiline STRING!!!!!\rwith all\r\nline ending types.");
+	
+	// pax::TextBox box;
+	// box.alignment = pax::JUSTIFY;
+	// pax::TextStyle style = box.getStyle();
+	// style.font = pax_font_sky;
+	// style.fontSize = 9;
+	// style.color = 0xffffffff;
+	// pax::Rectf bounds{20, 20, 280, 200};
+	// box.bounds = bounds;
+	// cbuf.outlineRect(bounds.x, bounds.y, bounds.w, bounds.h);
+	// box.appendStyle(style);
+	// box.appendText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+	// box.draw(cbuf);
+	
+	// Make a little image.
+	pax_buf_t extra;
+	pax_buf_init(&extra, NULL, 50, 50, PAX_BUF_8_2222ARGB);
+	pax_background(&extra, 0);
+	pax_draw_circle(&extra, 0xffff7f00, 25, 25, 20);
+	pax_draw_rect(&extra, 0xff00ff00, 20, 20, 10, 10);
+	pax_join();
+	
+	// Copy it to main buffer.
+	pax_draw_image(&buf, &extra, 0, 0);
+	
+	// And now a converted edition.
+	pax_buf_convert(&extra, &extra, PAX_BUF_16_565RGB);
+	pax_draw_image(&buf, &extra, 50, 0);
 	
 	disp_flush();
 }

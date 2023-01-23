@@ -108,6 +108,13 @@ static bool benchmark_bufcp(pax_buf_t *base, int iteration, void *args) {
     return !pax_last_error;
 }
 
+// Text: "Hello, World!"
+static bool benchmark_text(pax_buf_t *base, int iteration, void *args) {
+    const pax_font_t *font = args;
+    pax_draw_text(base, 0xffffffff, font, font->default_size, 0, 0, "Hello, World!");
+    return !pax_last_error;
+}
+
 void app_main() {
   
     
@@ -128,7 +135,7 @@ void app_main() {
     pax_enable_multicore(1);
     pax_background(&buf, 0);
     
-    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX C++ Test\n↑ Show Tech Demo\n↓ Show New Demo");
+    pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX Testing\n↑ Show Tech Demo\n↓ Show New Demo");
     disp_flush();
     
     bool cont = true;
@@ -240,6 +247,12 @@ void perform_benchmark() {
     fancy_benchmark("PNG decode (320x240)",  benchmark_png,   NULL);
     fancy_benchmark("Background",            benchmark_backg, NULL);
     fancy_benchmark("Buffer copy (320x240)", benchmark_bufcp, NULL);
+    
+    // Text rendering.
+    fancy_benchmark("Text (Saira Condensed)", benchmark_text, pax_font_saira_condensed);
+    fancy_benchmark("Text (Saira Regular)",   benchmark_text, pax_font_saira_regular);
+    fancy_benchmark("Text (Sky)",             benchmark_text, pax_font_sky);
+    fancy_benchmark("Text (Sky Mono)",        benchmark_text, pax_font_sky_mono);
     
 }
 

@@ -47,6 +47,7 @@ extern "C" void testing() {
 	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 24, 0xffffffff, false, false, true));
 	box.appendText("Underline text,");
 	box.append<pax::ImageElement>(pax::ImageElement(&smile));
+	box.appendText("Thiswordistoolongtofitononeline");
 	box.draw(cbuf);
 	
 	// // Make a little image.

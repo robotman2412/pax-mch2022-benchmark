@@ -17,4 +17,5 @@ idf_component_register(
         "." "include" "mch2022-demo" "demo2/src"
     EMBED_FILES
         ${project_dir}/main/my_image.png
+        ${project_dir}/main/smile.png
 )

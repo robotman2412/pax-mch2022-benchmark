@@ -3,6 +3,9 @@
 
 #include <pax_cxx.hpp>
 
+extern uint8_t smile_png_start[] asm("_binary_smile_png_start");
+extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
+
 extern "C" void testing() {
 	pax::Buffer cbuf(&buf);
 	
@@ -24,20 +27,42 @@ extern "C" void testing() {
 	// box.appendText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 	// box.draw(cbuf);
 	
-	// Make a little image.
-	pax_buf_t extra;
-	pax_buf_init(&extra, NULL, 50, 50, PAX_BUF_8_2222ARGB);
-	pax_background(&extra, 0);
-	pax_draw_circle(&extra, 0xffff7f00, 25, 25, 20);
-	pax_draw_rect(&extra, 0xff00ff00, 20, 20, 10, 10);
-	pax_join();
+	pax_buf_t smile;
+	pax_decode_png_buf(&smile, smile_png_start, smile_png_end-smile_png_start, PAX_BUF_16_4444ARGB, 0);
 	
-	// Copy it to main buffer.
-	pax_draw_image(&buf, &extra, 0, 0);
+	pax::TextBox box;
+	box.alignment = pax::JUSTIFY;
+	pax::Rectf bounds{20, 20, 280, 200};
+	box.bounds = bounds;
+	cbuf.outlineRect(bounds.x, bounds.y, bounds.w, bounds.h);
 	
-	// And now a converted edition.
-	pax_buf_convert(&extra, &extra, PAX_BUF_16_565RGB);
-	pax_draw_image(&buf, &extra, 50, 0);
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xffff0000));
+	box.appendText("Red text,");
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xff00ff00));
+	box.appendText("Green text,");
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xff0000ff));
+	box.appendText("Blue text,");
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xffffffff, true));
+	box.appendText("Italic text,");
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 24, 0xffffffff, false, false, true));
+	box.appendText("Underline text,");
+	box.append<pax::ImageElement>(pax::ImageElement(&smile));
+	box.draw(cbuf);
+	
+	// // Make a little image.
+	// pax_buf_t extra;
+	// pax_buf_init(&extra, NULL, 50, 50, PAX_BUF_8_2222ARGB);
+	// pax_background(&extra, 0);
+	// pax_draw_circle(&extra, 0xffff7f00, 25, 25, 20);
+	// pax_draw_rect(&extra, 0xff00ff00, 20, 20, 10, 10);
+	// pax_join();
+	
+	// // Copy it to main buffer.
+	// pax_draw_image(&buf, &extra, 0, 0);
+	
+	// // And now a converted edition.
+	// pax_buf_convert(&extra, &extra, PAX_BUF_16_565RGB);
+	// pax_draw_image(&buf, &extra, 50, 0);
 	
 	disp_flush();
 }

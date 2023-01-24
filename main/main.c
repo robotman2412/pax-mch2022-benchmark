@@ -131,6 +131,7 @@ void app_main() {
     
     // Initialize graphics for the screen.
     pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
+    pax_buf_reversed(&buf, true);
     if (pax_last_error) exit_to_launcher();
     pax_enable_multicore(1);
     pax_background(&buf, 0);
@@ -249,7 +250,6 @@ void perform_benchmark() {
     fancy_benchmark("Buffer copy (320x240)", benchmark_bufcp, NULL);
     
     // Text rendering.
-    fancy_benchmark("Text (Saira Condensed)", benchmark_text, pax_font_saira_condensed);
     fancy_benchmark("Text (Saira Regular)",   benchmark_text, pax_font_saira_regular);
     fancy_benchmark("Text (Sky)",             benchmark_text, pax_font_sky);
     fancy_benchmark("Text (Sky Mono)",        benchmark_text, pax_font_sky_mono);

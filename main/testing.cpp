@@ -36,18 +36,8 @@ extern "C" void testing() {
 	box.bounds = bounds;
 	cbuf.outlineRect(bounds.x, bounds.y, bounds.w, bounds.h);
 	
-	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xffff0000));
-	box.appendText("Red text,");
-	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xff00ff00));
-	box.appendText("Green text,");
-	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xff0000ff));
-	box.appendText("Blue text,");
-	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xffffffff, true));
-	box.appendText("Italic text,");
-	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 24, 0xffffffff, false, false, true));
-	box.appendText("Underline text,");
-	box.append<pax::ImageElement>(pax::ImageElement(&smile));
-	box.appendText("Thiswordistoolongtofitononeline");
+	box.appendStyle(pax::TextStyle(pax_font_saira_regular, 18, 0xffffffff));
+	box.appendText("This is a funny paragraph.\u00a0Newline.\nThis");
 	box.draw(cbuf);
 	
 	// // Make a little image.

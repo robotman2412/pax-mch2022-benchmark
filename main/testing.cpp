@@ -85,13 +85,15 @@ extern "C" void testing() {
 	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button F"));
 	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button G"));
 	
-	mount_internal_filesystem();
-	gui::addDefaultIconGetters();
-	gui::FilePicker base({0, 0, 320, 240}, "/internal");
-	base.onSelect = [](gui::FilePicker &base) {
-		auto x = base.getPath();
-		puts(x.c_str());
-	};
+	// mount_internal_filesystem();
+	// gui::addDefaultIconGetters();
+	// gui::FilePicker base({0, 0, 320, 240}, "/internal");
+	// base.onSelect = [](gui::FilePicker &base) {
+	// 	auto x = base.getPath();
+	// 	puts(x.c_str());
+	// };
+	
+	gui::Keyboard base({0, 0, 320, 240});
 	
 	bool needsADraw = true;
 	uint64_t prev = esp_timer_get_time() / 1000;

@@ -1,11 +1,6 @@
 
 #include "testing.h"
 
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "esp_system.h"
-
-#include <pax_gui.hpp>
 
 static const char *TAG = "testing";
 
@@ -13,119 +8,11 @@ extern uint8_t smile_png_start[] asm("_binary_smile_png_start");
 extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 
-namespace gui = pax::gui;
-
-gui::InputButton translateInput(rp2040_input_message_t msg) {
-	switch (msg.input) {
-		default: return gui::UNKNOWN;
-		case RP2040_INPUT_BUTTON_HOME:		return gui::HOME;
-		case RP2040_INPUT_BUTTON_MENU:		return gui::MENU;
-		case RP2040_INPUT_BUTTON_START:		return gui::START;
-		case RP2040_INPUT_BUTTON_ACCEPT:	return gui::ACCEPT;
-		case RP2040_INPUT_BUTTON_BACK:		return gui::BACK;
-		case RP2040_INPUT_BUTTON_SELECT:	return gui::SELECT;
-		case RP2040_INPUT_JOYSTICK_LEFT:	return gui::LEFT;
-		case RP2040_INPUT_JOYSTICK_PRESS:	return gui::CENTER;
-		case RP2040_INPUT_JOYSTICK_DOWN:	return gui::DOWN;
-		case RP2040_INPUT_JOYSTICK_UP:		return gui::UP;
-		case RP2040_INPUT_JOYSTICK_RIGHT:	return gui::RIGHT;
-	}
-}
-
-static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
-
-esp_err_t mount_internal_filesystem() {
-	const esp_partition_t* fs_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, "locfd");
-	if (fs_partition == NULL) {
-		ESP_LOGE(TAG, "failed to mount locfd: partition not found");
-		return ESP_FAIL;
-	}
-	
-	const esp_vfs_fat_mount_config_t mount_config = {
-		.format_if_mount_failed = true,
-		.max_files              = 5,
-		.allocation_unit_size   = CONFIG_WL_SECTOR_SIZE,
-	};
-	
-	esp_err_t res = esp_vfs_fat_spiflash_mount("/internal", "locfd", &mount_config, &s_wl_handle);
-	if (res != ESP_OK) {
-		ESP_LOGE(TAG, "failed to mount locfd (%d)", res);
-		return res;
-	}
-	
-	return ESP_OK;
-}
-
 
 extern "C" void testing() {
-	pax::Buffer cbuf(&buf);
-	
-	cbuf.background(0);
-	cbuf.fillColor = 0xffffffff;
-	cbuf.lineColor = 0xffffffff;
-	
-	// gui::Button base({20, 20, 100, 20}, "A Button!", [](gui::Button &b) -> void {
-	// 	ESP_LOGI("lololol", "BUTTON PRESSED!");
-	// });
-	
-	// gui::ColorPicker base({10, 10, 200, 200}, true, true);
-	// base.setHSV(32, 127, 127);
-	
-	// pax_buf_t imgbuf;
-	// pax_decode_png_buf(&imgbuf, smile_png_start, smile_png_end - smile_png_start, PAX_BUF_16_4444ARGB, 0);
-	// gui::Image base(&imgbuf);
-	
-	// gui::GridContainer base({0, 0, 320, 240}, 4, 3);
-	// base.doWrap = true;
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button A"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button B"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button C"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button D"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button E"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button F"));
-	// base.appendChildT(gui::Button({0, 0, 80, 20}, "Button G"));
-	
-	// mount_internal_filesystem();
-	// gui::addDefaultIconGetters();
-	// gui::FilePicker base({0, 0, 320, 240}, "/internal");
-	// base.onSelect = [](gui::FilePicker &base) {
-	// 	auto x = base.getPath();
-	// 	puts(x.c_str());
-	// };
-	
-	gui::Keyboard base({0, 0, 320, 240});
-	
-	bool needsADraw = true;
-	uint64_t prev = esp_timer_get_time() / 1000;
-	while (1) {
-		uint64_t now = esp_timer_get_time() / 1000;
-		
-		// Draw GUI stuffs.
-		if (needsADraw) {
-			cbuf.background(gui::getTheme()->backgroundColor);
-			base.draw(cbuf);
-			disp_flush();
-			needsADraw = false;
-		}
-		
-		// Do a ticking.
-		needsADraw |= base.tick(now, prev - now);
-		
-		// Await input.
-		rp2040_input_message_t msg;
-		if (xQueueReceive(get_rp2040()->queue, &msg, 1)) {
-			// Translate MCH2022 input to PAX GUI input.
-			auto input = translateInput(msg);
-			// Home button is still exit app.
-			if (input == gui::HOME) break;
-			// Forward event.
-			base.buttonChange(input, msg.state);
-			needsADraw = true;
-		}
-		
-		prev = now;
-	}
+	// LOLOLOL.
 }
+
 
 
 /*

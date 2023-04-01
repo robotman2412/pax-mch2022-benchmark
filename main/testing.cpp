@@ -11,6 +11,14 @@ extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 extern "C" void testing() {
 	// LOLOLOL.
+	while (1) {
+		auto dims = pax::Buffer::stringSize(pax_font_sky, 18, "Hello, World!");
+		ESP_LOGI(TAG, "Text size: %f, %f", dims.x, dims.y);
+		rp2040_input_message_t msg;
+		if (xQueueReceive(get_rp2040()->queue, &msg, portMAX_DELAY)) {
+			if (msg.input == RP2040_INPUT_BUTTON_HOME) break;
+		}
+	}
 }
 
 

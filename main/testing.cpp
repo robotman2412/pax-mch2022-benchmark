@@ -8,12 +8,45 @@ extern uint8_t smile_png_start[] asm("_binary_smile_png_start");
 extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 
+pax::Color arrlol[] = {
+	0xff000000,
+	0xffff0000,
+	0xff00ff00,
+	0xffffff00,
+	0xff0000ff,
+	0xffff00ff,
+	0xff00ffff,
+	0xffffffff,
+};
 
 extern "C" void testing() {
 	// LOLOLOL.
+	auto cbuf = pax::Buffer(&buf);
+	auto pal = pax::Buffer(320, 240, PAX_BUF_8_PAL);
+	pal.getInternal()->palette = arrlol;
+	pal.getInternal()->palette_size = sizeof(arrlol) / sizeof(pax::Color);
+	
+	// pax::disableMulticore();
+	
 	while (1) {
-		auto dims = pax::Buffer::stringSize(pax_font_sky, 18, "Hello, World!");
-		ESP_LOGI(TAG, "Text size: %f, %f", dims.x, dims.y);
+		pal.background(0);
+		pal.drawCircle(5,  30, 30, 20);
+		pal.drawCircle(-1, 30, 40, 20);
+		pal.drawArc(5,  60, 30, 20, 0, M_PI/2);
+		pal.drawArc(-1, 60, 40, 20, 0, M_PI/2);
+		pal.drawString(1,  pax_font_saira_regular, 18, 0,  0, "Color 1");
+		pal.drawString(2,  pax_font_saira_regular, 18, 0, 20, "Color 2");
+		pal.drawString(3,  pax_font_sky, 18, 0, 40, "Color 3");
+		pal.drawString(-1, pax_font_sky, 18, 0,  0, "Invisible");
+		pal.drawRect(4,  10, 50, 30, 30);
+		pal.drawRect(-1, 15, 55, 30, 30);
+		pal.drawLine(7, 0, 0, 100, 100);
+		pal.drawLine(-1, 0, 0, 100, 100);
+		pax::join();
+		
+		cbuf.drawImageOpaque(pal, 0, 0);
+		disp_flush();
+		
 		rp2040_input_message_t msg;
 		if (xQueueReceive(get_rp2040()->queue, &msg, portMAX_DELAY)) {
 			if (msg.input == RP2040_INPUT_BUTTON_HOME) break;

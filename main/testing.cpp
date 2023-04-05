@@ -8,6 +8,34 @@ extern uint8_t smile_png_start[] asm("_binary_smile_png_start");
 extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 
+
+extern "C" void testing() {
+	pax::Buffer gfx {&buf};
+	
+	// Make a simple box with Saira Regular in 18pt.
+	pax::TextBox box({0, 0, 150, 100}, pax_font_saira_regular, 18, pax::RIGHT);
+	
+	// Add a normal bit of text.
+	box.appendText("Saira regular 18pt.");
+	
+	// Add a red bit of text.
+	auto style   = box.getStyle();
+	style.italic = true;
+	style.color  = 0xffff0000;
+	box.appendStyle(style);
+	
+	box.appendText(" Red italics.");
+	
+	// Draw the thing.
+	gfx.background(0xff000000);
+	box.draw(gfx);
+	// Send to display.
+	disp_flush();
+}
+
+
+
+/*
 pax::Color arrlol[] = {
 	0xff000000,
 	0xffff0000,
@@ -53,6 +81,7 @@ extern "C" void testing() {
 		}
 	}
 }
+*/
 
 
 

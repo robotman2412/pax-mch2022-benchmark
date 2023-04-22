@@ -97,8 +97,8 @@ extern "C" void testing() {
 	// gui::Keyboard base({0, 0, 320, 240});
 	
 	
-	gui::ProgressBar base({0, (240-10)/2, 320, 10}, gui::ProgressBar::Style::ROUNDED_RECT);
-	// gui::ProgressBar base;
+	// gui::ProgressBar base({0, (240-10)/2, 320, 10}, gui::ProgressBar::Style::ROUNDED_RECT);
+	gui::ProgressBar base;
 	
 	
 	bool needsADraw = true;

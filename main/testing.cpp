@@ -10,6 +10,23 @@ extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 
 extern "C" void testing() {
+	pax_background(&buf, 0);
+	
+	pax_draw_round_rect(&buf, 0xffff0000, 10, 10, 50, 30, 5);
+	pax_draw_hollow_arc(&buf, 0xff00ff00, 80, 30, 10, 20, M_PI*0.25, M_PI*1.75);
+	pax_draw_round_hollow_arc(&buf, 0xff00ff00, 150, 30, 10, 20, M_PI*0.25, M_PI*1.75);
+	
+	pax_outline_round_rect(&buf, 0xffffffff, 10, 50, 50, 30, 5);
+	pax_outline_hollow_arc(&buf, 0xffffffff, 80, 70, 10, 20, M_PI*0.25, M_PI*1.75);
+	pax_outline_round_hollow_arc(&buf, 0xffffffff, 150, 70, 10, 20, M_PI*0.25, M_PI*1.75);
+	
+	disp_flush();
+}
+
+
+
+/*
+extern "C" void testing() {
 	pax::Buffer gfx {&buf};
 	
 	// Make a simple box with Saira Regular in 18pt.
@@ -32,6 +49,7 @@ extern "C" void testing() {
 	// Send to display.
 	disp_flush();
 }
+*/
 
 
 

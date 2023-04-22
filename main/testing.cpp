@@ -93,7 +93,13 @@ extern "C" void testing() {
 	// 	puts(x.c_str());
 	// };
 	
-	gui::Keyboard base({0, 0, 320, 240});
+	
+	// gui::Keyboard base({0, 0, 320, 240});
+	
+	
+	gui::ProgressBar base({0, (240-10)/2, 320, 10}, gui::ProgressBar::Style::ROUNDED_RECT);
+	// gui::ProgressBar base;
+	
 	
 	bool needsADraw = true;
 	uint64_t prev = esp_timer_get_time() / 1000;

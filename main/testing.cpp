@@ -12,13 +12,33 @@ extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 extern "C" void testing() {
 	pax_background(&buf, 0);
 	
-	pax_draw_round_rect(&buf, 0xffff0000, 10, 10, 50, 30, 5);
-	pax_draw_hollow_arc(&buf, 0xff00ff00, 80, 30, 10, 20, M_PI*0.25, M_PI*1.75);
-	pax_draw_round_hollow_arc(&buf, 0xff00ff00, 150, 30, 10, 20, M_PI*0.25, M_PI*1.75);
+	pax_draw_text(&buf, 0xffffffff, pax_font_sky, 9, 5, 5, "Hi Ther.");
+	pax_draw_rect(&buf, 0xffff0000, 0, 20, 40, 5);
+	pax_draw_rect(&buf, 0xff00ff00, 0, 25, 40, 5);
+	pax_draw_rect(&buf, 0xff0000ff, 0, 30, 40, 5);
 	
-	pax_outline_round_rect(&buf, 0xffffffff, 10, 50, 50, 30, 5);
-	pax_outline_hollow_arc(&buf, 0xffffffff, 80, 70, 10, 20, M_PI*0.25, M_PI*1.75);
-	pax_outline_round_hollow_arc(&buf, 0xffffffff, 150, 70, 10, 20, M_PI*0.25, M_PI*1.75);
+	pax_draw_rect(&buf, 0xff000000, 0*3, 0, 3, 3);
+	
+	pax_draw_rect(&buf, 0xffff0000, 2*3, 0, 3, 3);
+	pax_draw_rect(&buf, 0xff00ff00, 3*3, 0, 3, 3);
+	pax_draw_rect(&buf, 0xff0000ff, 4*3, 0, 3, 3);
+	
+	pax_draw_rect(&buf, 0xff00ffff, 6*3, 0, 3, 3);
+	pax_draw_rect(&buf, 0xffff00ff, 7*3, 0, 3, 3);
+	pax_draw_rect(&buf, 0xffffff00, 8*3, 0, 3, 3);
+	
+	pax_draw_rect(&buf, 0xffffffff, 10*3, 0, 3, 3);
+	
+	size_t pngsize;
+	void *pngbuf;
+	bool res = pax_encode_png_buf(&buf, &pngbuf, &pngsize, 0, 0, 40, 40);
+	if (!res) {
+		printf("Error: %s\n", pax_desc_err(pax_last_error));
+	} else {
+		pax_insert_png_buf(&buf, pngbuf, pngsize,  0, 60, 0);
+		pax_insert_png_buf(&buf, pngbuf, pngsize, 40, 60, 0);
+		pax_insert_png_buf(&buf, pngbuf, pngsize, 80, 60, 0);
+	}
 	
 	disp_flush();
 }

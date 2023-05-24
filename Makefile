@@ -4,7 +4,7 @@ IDF_PATH ?= $(shell pwd)/esp-idf
 IDF_EXPORT_QUIET ?= 0
 SHELL := /usr/bin/env bash
 
-.PHONY: prepare clean build flash monitor menuconfig
+.PHONY: prepare clean build install monitor menuconfig
 
 all: prepare build install
 
@@ -22,7 +22,7 @@ build:
 	source "$(IDF_PATH)/export.sh" && idf.py build
 
 install: build
-	python3 tools/webusb_push.py "PAX GFX benchmark" build/main.bin --run
+	python3 tools/app_push.py build/main.bin pax_gfx_bench "PAX GFX benchmark" 1 --run
 
 monitor:
 	source "$(IDF_PATH)/export.sh" && idf.py monitor -p $(PORT)

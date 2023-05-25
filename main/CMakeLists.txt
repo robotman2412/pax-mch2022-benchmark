@@ -11,7 +11,7 @@ idf_component_register(
         "mch2022-demo/techdemo.c"
         "mch2022-demo/sponsors.c"
         "mch2022-demo/images/anim_intro.c"
-        "demo2/src/td2.cpp"
+        "demo2/src/td2.c"
        
     INCLUDE_DIRS
         "." "include" "mch2022-demo" "demo2/src"

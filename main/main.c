@@ -133,7 +133,7 @@ void app_main() {
     pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
     pax_buf_reversed(&buf, true);
     if (pax_last_error) exit_to_launcher();
-    pax_enable_multicore(1);
+    // pax_enable_multicore(1);
     pax_background(&buf, 0);
     
     pax_draw_text(&buf, 0xffffffff, pax_font_saira_regular, 18, 5, 5, "🅰 Benchmark\n🅱 PAX Testing\n↑ Show Tech Demo\n↓ Show New Demo");
@@ -283,7 +283,7 @@ void fancy_benchmark(const char *name, benchfunc_t func, void *args) {
 }
 
 // Method that TD2 expects to be externally defined, to get time in milliseconds.
-uint64_t td2_millis_cb() {
+int64_t td2_millis_cb() {
     return esp_timer_get_time() / 1000;
 }
 

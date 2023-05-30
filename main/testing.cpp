@@ -9,6 +9,78 @@ extern uint8_t smile_png_end[]   asm("_binary_smile_png_end");
 
 
 
+uint32_t dummy_shader_promise(pax_buf_t *buf, pax_col_t color, void *args) {
+	return PAX_PROMISE_IGNORE_BASE | PAX_PROMISE_IGNORE_UVS | PAX_PROMISE_OPAQUE;
+}
+
+pax_col_t dummy_shader_cb(pax_col_t existing, pax_col_t tint, int x, int y, float u, float v, void *args) {
+	return (x ^ y) & 1 ? 0xff00ff00 : 0xff0000ff;
+}
+
+pax_shader_t dummy_shader = {
+	.schema_version    = 1,
+	.schema_complement = (uint8_t) ~1,
+	.renderer_id       = PAX_RENDERER_ID_SWR,
+	.promise_callback  = (void*) dummy_shader_promise,
+	.callback          = (void*) dummy_shader_cb,
+	.callback_args     = NULL,
+	.alpha_promise_0   = false,
+	.alpha_promise_255 = true,
+};
+
+void thing(int64_t now, bool shaded) {
+	pax_push_2d(&buf);
+	
+	// Rotate centerr.
+	float a0 = now % 10000 / 10000.0f * 2 * M_PI;
+	float r0 = 30;
+	pax_apply_2d(&buf, matrix_2d_translate(80 + r0*cosf(a0), 120 - r0*sinf(a0)));
+	
+	// Draw circle.
+	float a1 = now % 2000 / 2000.0f * 2 * M_PI;
+	float r2 = 15 + 5*sinf(a1);
+	if (shaded) {
+		pax_draw_circle(&buf, 0xffff0000, 0, 0, r2);
+	} else {
+		pax_shade_circle(&buf, 0, &dummy_shader, NULL, 0, 0, r2);
+	}
+	
+	pax_pop_2d(&buf);
+}
+
+extern "C" void testing() {
+	while (1) {
+		pax_background(&buf, 0);
+		int64_t now = esp_timer_get_time() / 1000;
+		pax_recti clip = { 40, 80, 80, 80 };
+		
+		pax_draw_rect(&buf, 0xff3f3f3f, clip.x, clip.y, clip.w, clip.h);
+		pax_clip(&buf, clip.x, clip.y, clip.w, clip.h);
+		thing(now, false);
+		pax_noclip(&buf);
+		
+		pax_push_2d(&buf);
+		pax_apply_2d(&buf, matrix_2d_translate(160, 0));
+		
+		pax_draw_rect(&buf, 0xff3f3f3f, clip.x, clip.y, clip.w, clip.h);
+		pax_clip(&buf, clip.x+160, clip.y, clip.w, clip.h);
+		thing(now, true);
+		pax_noclip(&buf);
+		
+		pax_pop_2d(&buf);
+		
+		disp_flush();
+		
+		rp2040_input_message_t msg;
+		if (xQueueReceive(get_rp2040()->queue, &msg, 1)) {
+			if (msg.input == RP2040_INPUT_BUTTON_HOME) break;
+		}
+	}
+}
+
+
+
+/*
 extern "C" void testing() {
 	pax_background(&buf, 0);
 	
@@ -42,6 +114,7 @@ extern "C" void testing() {
 	
 	disp_flush();
 }
+*/
 
 
 
